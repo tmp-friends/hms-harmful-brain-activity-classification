@@ -81,10 +81,14 @@ class DataLoader(tf.keras.utils.Sequence):
                 min_value = row.select(pl.col("min")).to_numpy()[0, 0]
                 max_value = row.select(pl.col("max")).to_numpy()[0, 0]
 
+                # subsequenceの中点
+                # 中点は(min+max)//2だが、各単位に2秒の配列があるのでさらに2で除算
+                # https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/467576#2605715
                 r = int((min_value + max_value) // 4)
 
             # スペクトログラム(最初の4チャネル)
             for k in range(4):
+                # spectrogram is 10mins i.e 600secs so 300 units, midpoint is 150 so 145:155 is 20secs
                 img = self.specs[row.get_column("spec_id").to_numpy()[0]][
                     r : r + 300, k * 100 : (k + 1) * 100
                 ].T

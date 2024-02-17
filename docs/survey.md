@@ -1,6 +1,6 @@
 # Survey
 
-## HMS - Harmful Brain Activity Classification
+## HMS - Discussion
 
 ### Understanding Competition Data and EfficientNetB2 Starter - LB 0.43 🎉
 
@@ -16,20 +16,25 @@ https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/di
 
 - A.
   - train.csvの各行は、一人の特定の患者からの`window of time`
-  - 対応するEEGとスペクトログラムはparquetファイルで見つけられる
+  - 対応するEEGとspectrogramはparquetファイルで見つけられる
 
+- EEGのtime window: 50s
+- spectrogramのtime window: 600s
+- 中央のイベント(10s間)を予測する必要あり
 
 - KaggleDatasetあり
   - https://www.kaggle.com/datasets/cdeotte/brain-spectrograms
   - 11138のスペクトログラムファイルを1つにまとめた
   - 一気にRAMに読み込んでおくことで、逐一ファイルを読み込むより高速になる
 
-#### 感想
+**所感**
 
-- あまり理解できていない
-  - それぞれのeegの時間中央値の値を用いて推論を行う？
+- 図もついているしわかりやすい
+  - フーリエ変換について調べたら、理解できた
+- EEGとスペクトログラムの対応関係がわからない
+- 中央のイベントを予測するのはわかるが、10sなのはなぜ？？
 
-#### 備考
+**備考**
 
 EEGとスペクトログラムの関係性 by ChatGPT
 
@@ -75,6 +80,25 @@ STFTから得られたパワースペクトルを時間軸に沿って並べる�
 時間と周波数の関係性は、信号をどのように解析するかに基づいて異なる視点を提供します。時間ドメインでは信号の時間的変化を、周波数ドメインでは信号の周波数成分とその強度を捉えることができます。時間-周波数解析手法を用いることで、これら二つのドメインの情報を組み合わせて信号をより深く理解することが可能になります。
 ```
 
+- フーリエ変換
+  - パラメータ
+    - time window
+      - 信号をどれだけの長さで区切るか
+      - windowが長いほど周波数解像度は高くなるが、時間解像度は低くなる
+      - 今回は600s
+    - overwrap
+      - 連続する時間窓がどれだけ重なるか
+      - overwrapを多くすると、時間解像度は高くなるが、計算量は増える
+        - 今回はなさそう(by 別のDiscussionより)
+    - window func
+      - 各time windowに適用する関数で、信号の端における不連続を減少させるために使用
+
+### How To Make Spectrogram from EEG
+
+https://www.kaggle.com/code/cdeotte/how-to-make-spectrogram-from-eeg
+
+-
+
 ### 🧠📈 Beginner's EDA 📈🧠
 
 https://www.kaggle.com/code/clehmann10/beginner-s-eda
@@ -83,11 +107,67 @@ https://www.kaggle.com/code/clehmann10/beginner-s-eda
 - あまり読み込めてないので、後で読む
 
 
-###
+### UPDATED - CatBoost Starter Notebook and Kaggle Dataset - LB 0.60
 
+https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/467576
+
+- notebook: https://www.kaggle.com/code/cdeotte/catboost-starter-lb-0-60?scriptVersionId=159895287
+- スペクトログラムデータのみのCatBoostでCV0.74, LB0.60
+- uniqueな`eeg_id`に対応するスペクトログラムの中央10分から特徴量を生成
+  - 10分間のスペクトログラムは300回(2秒ごとに測定しているため)
+  - 脳の4象限から100の周波数について測定 -> 400の時系列の時間平均
 - LBの向上させ方
   - スペクトログラムからさらに特徴を作れる
   - 各eeg_idに対して、10（または任意の）サンプルを作成し、各サンプルが異なる10分間のspectrogram windowを使うことも可能
     - ランダムクロップデータの増強のようなイメージ
     - これにより10倍のデータが作成される
   - eeg parquetsから特徴量を生成することもできる
+
+- Comments
+  - GroupKFoldとStratifiedGroupKFoldの使い分け
+    - StraitifiedGroupKFoldを使うとき
+      - 1つのターゲットクラスが非常に稀で、trainとvalidにそのクラスを必ず含めたい
+      - testがtrainと同じ割合のターゲットクラスを持っている
+    - 今回は、testがtrainと同じ割合を持つかはわからないので、GroupKFoldを用いている
+    - GroupKFoldのほうが未知のtest比率に対して、わずかにうまく汎用化できる
+
+**所感**
+- スペクトログラムからの特徴量の作り方や、GroupKFoldとStratifiedGroupKFoldの使い分け方などを学べた
+
+### EDA Train.csv
+
+https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/467021
+
+- testはtrainに近い
+  - 6つのターゲットクラスに対して、重複を許さないほうがLBが良い
+- testはpatient_id毎に重複をしないEEG配列が繰り返される
+
+- Comments
+  - trainでは重複するeeg_idを持っているのに対し、testは重複しない
+  - trainでは重複するpatient_idを持っているのに対し、testは重複しない
+
+### Kullback Leibler Divergence Applications, Limitations and KL Divergence on Kaggle.
+
+https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/466731
+
+-
+
+### Previous Competitions Top Solutions (May help in this competition too)
+
+https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/467979
+
+### Adjutant resources to refer
+
+https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/466721
+
+## HMS - Code
+
+### CatBoost Starter
+
+### Grad Cam - What is important in Spectrograms?
+
+https://www.kaggle.com/code/cdeotte/grad-cam-what-is-important-in-spectrograms
+
+-
+
+
