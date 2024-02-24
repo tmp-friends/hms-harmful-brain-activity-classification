@@ -1,1 +1,1 @@
-from src.loaders.dataloader import DataLoader
+from .dataloader import DataLoader

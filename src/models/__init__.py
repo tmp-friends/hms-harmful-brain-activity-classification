@@ -1,1 +1,1 @@
-from src.models.efficientnet_b0 import EfficientNetB0
+from .efficientnet_b0 import EfficientNetB0
