@@ -1,8 +1,8 @@
-# Survey
+## Survey
 
-## HMS - Discussion
+### HMS - Discussion
 
-### Understanding Competition Data and EfficientNetB2 Starter - LB 0.43 🎉
+#### Understanding Competition Data and EfficientNetB2 Starter - LB 0.43 🎉
 
 https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/468010
 
@@ -93,13 +93,13 @@ STFTから得られたパワースペクトルを時間軸に沿って並べる�
     - window func
       - 各time windowに適用する関数で、信号の端における不連続を減少させるために使用
 
-### How To Make Spectrogram from EEG
+#### How To Make Spectrogram from EEG
 
 https://www.kaggle.com/code/cdeotte/how-to-make-spectrogram-from-eeg
 
 -
 
-### 🧠📈 Beginner's EDA 📈🧠
+#### 🧠📈 Beginner's EDA 📈🧠
 
 https://www.kaggle.com/code/clehmann10/beginner-s-eda
 
@@ -107,7 +107,7 @@ https://www.kaggle.com/code/clehmann10/beginner-s-eda
 - あまり読み込めてないので、後で読む
 
 
-### UPDATED - CatBoost Starter Notebook and Kaggle Dataset - LB 0.60
+#### UPDATED - CatBoost Starter Notebook and Kaggle Dataset - LB 0.60
 
 https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/467576
 
@@ -134,7 +134,7 @@ https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/di
 **所感**
 - スペクトログラムからの特徴量の作り方や、GroupKFoldとStratifiedGroupKFoldの使い分け方などを学べた
 
-### EDA Train.csv
+#### EDA Train.csv
 
 https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/467021
 
@@ -146,19 +146,37 @@ https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/di
   - trainでは重複するeeg_idを持っているのに対し、testは重複しない
   - trainでは重複するpatient_idを持っているのに対し、testは重複しない
 
-### Kullback Leibler Divergence Applications, Limitations and KL Divergence on Kaggle.
+#### Kullback Leibler Divergence Applications, Limitations and KL Divergence on Kaggle.
 
 https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/466731
 
 -
 
-### Previous Competitions Top Solutions (May help in this competition too)
+#### Previous Competitions Top Solutions (May help in this competition too)
 
 https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/467979
 
-### Adjutant resources to refer
+#### Adjutant resources to refer
 
 https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/466721
+
+#### Previous Competitions Top Solutions (May help in this competition too)
+
+https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/467979
+
+- 過去の類似コンペ
+  - BirdCLEF 2023
+  - University of Liverpool - Ion Switching
+
+#### Papers & Model Architectures
+
+https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/468771
+
+- CV系のDeepモデルの論文
+  - 1D CNN
+  - CNN+RNN
+  - CNN+Bi-LSTM
+  - Bi-LSTM+ATT
 
 ## HMS - Code
 
