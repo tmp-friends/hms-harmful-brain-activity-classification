@@ -70,7 +70,7 @@ class DataLoader(tf.keras.utils.Sequence):
             indices:
         """
         X = np.zeros((len(indices), 128, 256, 8), dtype="float32")
-        y = np.zeros((len(indices), len(self.label_columns)), dtype="float32")
+        y = np.zeros((len(indices), 6), dtype="float32")
         img = np.ones((128, 256), dtype="float32")
 
         for j, i in enumerate(indices):
@@ -86,7 +86,7 @@ class DataLoader(tf.keras.utils.Sequence):
             # スペクトログラム(最初の4チャネル)
             for k in range(4):
                 # spectrogram is 10mins i.e 600secs so 300 units, midpoint is 150 so 145:155 is 20secs
-                img = self.specs[row.spec_id][r : r + 300, k * 100 : (k + 1) * 100].T
+                img = self.specs[row.spectrogram_id][r : r + 300, k * 100 : (k + 1) * 100].T
 
                 # img毎に対数標準化
                 img = np.clip(img, np.exp(-4), np.exp(8))

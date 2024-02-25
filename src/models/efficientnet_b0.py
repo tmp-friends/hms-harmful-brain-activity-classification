@@ -25,7 +25,7 @@ class EfficientNetB0:
         x2 = [input[:, :, :, i + 4 : i + 5] for i in range(4)]
         x2 = tf.keras.layers.Concatenate(axis=1)(x2)
 
-        # 512x512x3
+        # Make512x512x3
         x = tf.keras.layers.Concatenate(axis=2)([x1, x2])
 
         x = tf.keras.layers.Concatenate(axis=3)([x, x, x])

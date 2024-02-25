@@ -1,5 +1,5 @@
-# What is this
-kaggle docker can use GPU  
+## What is this
+kaggle docker can use GPU
 
 worked on docker version 24.x.x higher
 
@@ -9,16 +9,16 @@ $ cd my_kaggle_docker
 $ docker compose up -d
 ```
 
-# acess jupyter notebook
-acess here http://127.0.0.1:8888  
-default jupyter notebook password is "kaggle"  
-if u want to change password, look run.sh  
+## acess jupyter notebook
+acess here http://127.0.0.1:8888
+default jupyter notebook password is "kaggle"
+if u want to change password, look run.sh
 
-# Attach to a running container
+## Attach to a running container
 In Visual Code, using attach to a running container.
 https://code.visualstudio.com/docs/devcontainers/attach-container#_attach-to-a-docker-container
 
-# setting default python
+## setting default python
 default python switch
 ```bash
 $ alias python='/opt/conda/bin/python'
@@ -27,4 +27,12 @@ $ alias python='/opt/conda/bin/python'
 if u want to conda activate
 ```bash
 $ source /opt/conda/bin/activate
+```
+
+## Upload model to kaggle
+
+https://qiita.com/sugupoko/items/04e463ea07d7e526e961
+
+```
+$ kaggle datasets create -p output --dir-mode zip
 ```
