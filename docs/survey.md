@@ -2,6 +2,28 @@
 
 ### HMS - Discussion
 
+### LB probing results in HMS-HBAC
+
+https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/471890
+
+LB probingの結果
+
+- test data内にeeg_idの重複はない
+- test data内にspectrogram_idの重複はない
+-
+
+#### Magic Formula to Convert EEG to Spectrograms!
+
+https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/469760
+
+#### There are ~2640 unique EEG ids in the hidden test data!
+
+https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/471287
+
+- subしてかかった時間を調べることでprivateのunique eeg_idを調べた
+- 1つのidあたり5sのsleepを入れていた
+- eeg_idは2640ほどあると考えられる
+
 #### Understanding Competition Data and EfficientNetB2 Starter - LB 0.43 🎉
 
 https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/468010
@@ -178,11 +200,11 @@ https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/di
   - CNN+Bi-LSTM
   - Bi-LSTM+ATT
 
-## HMS - Code
+### HMS - Code
 
-### CatBoost Starter
+#### CatBoost Starter
 
-### Grad Cam - What is important in Spectrograms?
+#### Grad Cam - What is important in Spectrograms?
 
 https://www.kaggle.com/code/cdeotte/grad-cam-what-is-important-in-spectrograms
 
