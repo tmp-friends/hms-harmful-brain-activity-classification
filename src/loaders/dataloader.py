@@ -84,9 +84,9 @@ class DataLoader(tf.keras.utils.Sequence):
                 r = int((row["min"] + row["max"]) // 4)
 
             # スペクトログラム(最初の4チャネル)
-            for k in range(4):
+            for region in range(4):
                 # spectrogram is 10mins i.e 600secs so 300 units, midpoint is 150 so 145:155 is 20secs
-                img = self.specs[row.spectrogram_id][r : r + 300, k * 100 : (k + 1) * 100].T
+                img = self.specs[row.spectrogram_id][r : r + 300, region * 100 : (region + 1) * 100].T
 
                 # img毎に対数標準化
                 img = np.clip(img, np.exp(-4), np.exp(8))
@@ -112,7 +112,7 @@ class DataLoader(tf.keras.utils.Sequence):
 
                 いずれもHyperParameterなので、改善の余地あり
                 """
-                X[j, 14:-14, :, k] = img[:, 22:-22] / 2.0
+                X[j, 14:-14, :, region] = img[:, 22:-22] / 2.0
 
             # EEG(次の4チャネル)
             # https://www.kaggle.com/code/cdeotte/how-to-make-spectrogram-from-eeg
@@ -126,15 +126,40 @@ class DataLoader(tf.keras.utils.Sequence):
 
     def _augment_batch(self, img_batch):
         for i in range(img_batch.shape[0]):
-            img_batch[i,] = self._random_transform(img_batch[i,])
+            img_batch[i,] = self._transform(img_batch[i,])
 
         return img_batch
 
-    def _random_transform(self, img):
+    def _transform(self, img):
+        """
+        - https://www.kaggle.com/code/medali1992/hms-efficientnetb0-train/notebook
+        - https://www.kaggle.com/code/iglovikov/xymasking-aug
+        """
+        params1 = {
+            "num_masks_x": 1,
+            "mask_x_length": (0, 20),  # This line changed from fixed to a range
+            "fill_value": (0, 1, 2, 3, 4, 5, 6, 7),
+        }
+        params2 = {
+            "num_masks_y": 1,
+            "mask_y_length": (0, 20),
+            "fill_value": (0, 1, 2, 3, 4, 5, 6, 7),
+        }
+        params3 = {
+            "num_masks_x": (2, 4),
+            "num_masks_y": 5,
+            "mask_x_length": (10, 20),
+            "mask_x_length": 8,
+            "fill_value": (0, 1, 2, 3, 4, 5, 6, 7),
+        }
+
         composition = albu.Compose(
             [
-                albu.HorizontalFlip(p=0.5),
+                # albu.HorizontalFlip(p=0.5),
                 # albu.CoarseDropout(max_holes=8, max_height=32, max_width=32, fill_value=0, p=0.5),
+                albu.XYMasking(**params1, p=0.3),
+                albu.XYMasking(**params2, p=0.3),
+                albu.XYMasking(**params3, p=0.3),
             ]
         )
 
