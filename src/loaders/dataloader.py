@@ -115,10 +115,9 @@ class DataLoader(tf.keras.utils.Sequence):
                 X[j, 14:-14, :, k] = img[:, 22:-22] / 2.0
 
             # EEG(次の4チャネル)
-            # TODO: EEGからスペクトログラムを作る必要あり
             # https://www.kaggle.com/code/cdeotte/how-to-make-spectrogram-from-eeg
-            # img = self.eegs[row.get_column("eeg_id").to_numpy()[0]]
-            # X[j, :, :, 4:] = img
+            img = self.eegs[row["eeg_id"]]
+            X[j, :, :, 4:] = img
 
             if self.mode != "test":
                 y[j,] = row[self.label_columns]
@@ -138,3 +137,5 @@ class DataLoader(tf.keras.utils.Sequence):
                 # albu.CoarseDropout(max_holes=8, max_height=32, max_width=32, fill_value=0, p=0.5),
             ]
         )
+
+        return composition(image=img)["image"]
