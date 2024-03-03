@@ -155,7 +155,8 @@ class DataLoader(tf.keras.utils.Sequence):
 
         composition = albu.Compose(
             [
-                albu.HorizontalFlip(p=0.5),
+                albu.HorizontalFlip(p=0.3),
+                albu.VerticalFlip(p=0.3),
                 # albu.CoarseDropout(max_holes=8, max_height=32, max_width=32, fill_value=0, p=0.5),
                 albu.XYMasking(**params1, p=0.3),
                 albu.XYMasking(**params2, p=0.3),
