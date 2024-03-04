@@ -1,4 +1,5 @@
 from typing import List, Dict
+import random
 
 import numpy as np
 import pandas as pd
@@ -49,7 +50,9 @@ class DataLoader(tf.keras.utils.Sequence):
     def __getitem__(self, index) -> None:
         """1バッチを生成"""
         indices = self.indices[index * self.batch_size : (index + 1) * self.batch_size]
+
         X, y = self._generate_data(indices)
+        X, y = self._hbac_cutmix(X, y)
 
         if self.augment:
             X = self._augment_batch(X)
@@ -124,6 +127,57 @@ class DataLoader(tf.keras.utils.Sequence):
 
         return X, y
 
+    def _hbac_cutmix(
+        self,
+        X: np.ndarray,
+        y: np.ndarray,
+        cutmix_thr=0.5,
+        margin=50,
+        min_size=25,
+        max_size=75,
+        cut_eeg_spec=True,
+    ):
+        """@ref: https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/479446"""
+        # CutMix Data
+        cutmix_data = np.copy(X)  # Use np.copy for cloning in NumPy
+
+        for label_idx in range(y.shape[1]):
+            # Indices with a confidence score greater than cutmix_thr for particular target
+            indices = np.nonzero(y[:, label_idx] >= cutmix_thr)[0]
+
+            # Skip if less than 2 samples with confidence score 1.0
+            if len(indices) < 2:
+                continue
+
+            # Original Data
+            data_orig = X[indices, :, :, :]
+
+            # Shuffle
+            shuffled_indices = np.random.permutation(len(indices))
+            data_shuffled = data_orig[shuffled_indices, :, :, :]
+
+            # CutMix augmentation logic
+            start = (
+                random.randint(0, margin)
+                if random.choice([True, False])
+                else random.randint(300 - max_size - margin, 300 - max_size)
+            )
+            size = random.randint(min_size, max_size)
+
+            # CutMix in Specs
+            for idx in range(len(indices)):
+                cutmix_data[indices[idx], :, start : start + size, :] = data_shuffled[idx, :, start : start + size, :]
+
+            # CutMix in EEG Specs
+            if cut_eeg_spec:
+                start = 300 + 40 + start  # Size + Padding + Start
+                for idx in range(len(indices)):
+                    cutmix_data[indices[idx], :, start : start + size, :] = data_shuffled[
+                        idx, :, start : start + size, :
+                    ]
+
+        return cutmix_data, y
+
     def _augment_batch(self, img_batch):
         for i in range(img_batch.shape[0]):
             img_batch[i,] = self._transform(img_batch[i,])
@@ -155,8 +209,7 @@ class DataLoader(tf.keras.utils.Sequence):
 
         composition = albu.Compose(
             [
-                albu.HorizontalFlip(p=0.3),
-                albu.VerticalFlip(p=0.3),
+                albu.HorizontalFlip(p=0.5),
                 # albu.CoarseDropout(max_holes=8, max_height=32, max_width=32, fill_value=0, p=0.5),
                 albu.XYMasking(**params1, p=0.3),
                 albu.XYMasking(**params2, p=0.3),
