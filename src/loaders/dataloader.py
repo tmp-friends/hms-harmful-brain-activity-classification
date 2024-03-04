@@ -54,6 +54,7 @@ class DataLoader(tf.keras.utils.Sequence):
         X, y = self._generate_data(indices)
 
         if self.augment:
+            X, y = self._mixup(X, y)
             X, y = self._hbac_cutmix(X, y)
             X = self._augment_batch(X)
 
@@ -126,6 +127,27 @@ class DataLoader(tf.keras.utils.Sequence):
                 y[j,] = row[self.label_columns]
 
         return X, y
+
+    def _mixup(self, X: np.ndarray, y: np.ndarray, alpha=2.0):
+        """MixUp処理を行う
+
+        Args:
+            X (np.ndarray): 入力データ
+            y (np.ndarray): ラベルデータ
+            alpha (float, optional): Mixup のパラメータ. Defaults to 0.2.
+
+        Returns:
+            np.ndarray: Mixup された入力データ
+            np.ndarray: Mixup されたラベルデータ
+        """
+        lam = np.random.beta(alpha, alpha, X.shape[0])
+        index_array = np.arange(X.shape[0])
+        np.random.shuffle(index_array)
+
+        mixed_X = lam.reshape(-1, 1, 1, 1) * X + (1 - lam).reshape(-1, 1, 1, 1) * X[index_array]
+        mixed_y = lam.reshape(-1, 1) * y + (1 - lam).reshape(-1, 1) * y[index_array]
+
+        return mixed_X, mixed_y
 
     def _hbac_cutmix(
         self,
