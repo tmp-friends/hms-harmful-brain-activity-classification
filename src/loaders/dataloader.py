@@ -52,9 +52,9 @@ class DataLoader(tf.keras.utils.Sequence):
         indices = self.indices[index * self.batch_size : (index + 1) * self.batch_size]
 
         X, y = self._generate_data(indices)
-        X, y = self._hbac_cutmix(X, y)
 
         if self.augment:
+            X, y = self._hbac_cutmix(X, y)
             X = self._augment_batch(X)
 
         return X, y
