@@ -1,28 +1,6 @@
 ## Survey
 
-### HMS - Discussion
-
-### LB probing results in HMS-HBAC
-
-https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/471890
-
-LB probingの結果
-
-- test data内にeeg_idの重複はない
-- test data内にspectrogram_idの重複はない
--
-
-#### Magic Formula to Convert EEG to Spectrograms!
-
-https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/469760
-
-#### There are ~2640 unique EEG ids in the hidden test data!
-
-https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/471287
-
-- subしてかかった時間を調べることでprivateのunique eeg_idを調べた
-- 1つのidあたり5sのsleepを入れていた
-- eeg_idは2640ほどあると考えられる
+### HMS
 
 #### Understanding Competition Data and EfficientNetB2 Starter - LB 0.43 🎉
 
@@ -115,12 +93,45 @@ STFTから得られたパワースペクトルを時間軸に沿って並べる�
     - window func
       - 各time windowに適用する関数で、信号の端における不連続を減少させるために使用
 
+#### There are ~2640 unique EEG ids in the hidden test data!
+
+https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/471287
+
+- subしてかかった時間を調べることでprivateのunique eeg_idを調べた
+- 1つのidあたり5sのsleepを入れていた
+- eeg_idは2640ほどあると考えられる
+
 #### How To Make Spectrogram from EEG
 
 https://www.kaggle.com/code/cdeotte/how-to-make-spectrogram-from-eeg
 
--
+- EEGのraw dataからspectrogramを生成する方法
 
+#### LB probing results in HMS-HBAC
+
+https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/471890
+
+LB probingの結果
+
+- test data内にeeg_idの重複はない
+- test data内にspectrogram_idの重複はない
+
+#### Magic Formula to Convert EEG to Spectrograms!
+
+https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/469760
+
+#### EfficientNetB0 Starter - [LB 0.43]
+
+- ベースにする
+  - TensorFlow
+
+#### CatBoost Starter
+
+#### Grad Cam - What is important in Spectrograms?
+
+https://www.kaggle.com/code/cdeotte/grad-cam-what-is-important-in-spectrograms
+
+-
 #### 🧠📈 Beginner's EDA 📈🧠
 
 https://www.kaggle.com/code/clehmann10/beginner-s-eda
@@ -174,10 +185,6 @@ https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/di
 
 -
 
-#### Previous Competitions Top Solutions (May help in this competition too)
-
-https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/467979
-
 #### Adjutant resources to refer
 
 https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/466721
@@ -186,7 +193,7 @@ https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/di
 
 https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/467979
 
-- 過去の類似コンペ
+- 過去の類似コンペの紹介
   - BirdCLEF 2023
   - University of Liverpool - Ion Switching
 
@@ -200,14 +207,109 @@ https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/di
   - CNN+Bi-LSTM
   - Bi-LSTM+ATT
 
-### HMS - Code
 
-#### CatBoost Starter
+#### Resources for getting started with Heart Data
 
-#### Grad Cam - What is important in Spectrograms?
+https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/467129
 
-https://www.kaggle.com/code/cdeotte/grad-cam-what-is-important-in-spectrograms
+- ECG(心電図)の主な特徴量
+  - QRS complexes
+  - R peaks
+  - R-R intervals
+
+<img src="https://www.googleapis.com/download/storage/v1/b/kaggle-forum-message-attachments/o/inbox%2F2030387%2F1fdc5942d17ce7b15801884d74241d66%2FScreenshot%202024-01-11%20093911.png?generation=1704962385485913&alt=media" width="400px" />
+
+<img src="https://www.googleapis.com/download/storage/v1/b/kaggle-forum-message-attachments/o/inbox%2F2030387%2F8de171d5fde4afbadc1691ababdde3d8%2Fecg-morphology.png?generation=1704962638836359&alt=media" width="600px" />
+
+**所感**
+- 心電図の話なので、あまり関係なさそうではある
+
+
+#### Resources for getting started with Brain Data - EEG
+
+https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/466768
 
 -
 
+**所感**
+- 脳波に関するドメイン知識が皆無なので助かる
+  - 大学で脳波のことをあつかっている研究室があった気がする
 
+
+#### XYMasking aug
+
+https://www.kaggle.com/code/iglovikov/xymasking-aug
+
+- albuのXYMaskingの使い方
+
+#### TTA not helping?
+
+https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/480775
+
+- TTA=TestTimeAugmentation
+  - LBが0.02ほど改善したらしい
+
+- LB4位の人曰く、
+  - data augmentationにおいては、mixupのみ有効らしい
+  - それ以外は、negativeな作用
+  - time-frequency maps(spec)とrawEEGを組み合わせて、1つのモデルの複数の入力としているそう
+
+- 入力の種類を増やせば、モデルの性能が上がりそう
+
+#### Hard samples are more important - [LB 0.37]
+
+https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/477461:
+
+- Need for New Insightsでふれられていた2stage-training
+
+#### Need for New Insights
+
+https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/480674
+
+- ViT使う
+  - ensembleにも使えそう
+- LB0.2xのレートはself-attention layerを組み込んでいるのでは、という意見もあった
+
+#### Proper Augmentations is a Key!
+
+https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/479776
+
+- data augmentationで効いたものや効かなかったことが書かれている
+- 効いたこと
+  - XYMasking
+  - VerticalFlip
+- 効かなかったこと
+  - HorizontalFlip
+  - Brightness contrast
+  - rotation
+  - cropping
+
+- Commentにて
+  - mixupで0.02ほど改善した方もいた
+  - XYMaskingのparameterのさじ加減が難しい
+    - 複数の小さなマスクをかけたほうがいい感じになる
+
+#### HMS EfficientNetB0 Train
+
+https://www.kaggle.com/code/medali1992/hms-efficientnetb0-train
+
+- 公開notebookで（アンサンブルでなく）LB0.36
+- 差分を確認
+
+
+```
+先日、@nischaydnkが作成したこのノートブックを改良したディスカッションを共有した。私が使ったトリックは、特にオプティマイザを変更したこと（私はAdanを使った）、そして@seanbeardenがここで述べているように2段階トレーニングを使い、ダウンサンプリングを使わなかったことで、かなりうまくいった。しかし、2段階トレーニングにはデータ漏洩という問題があります。klはミスラベルをしてもモデルにほとんどペナルティを与えないからだ。そのため、以前の実験では2つのデータセットに対して2回のgroupkfold CVを行ったが、投票数の少ないサンプルはどちらのデータセットにも存在した。
+
+そこでこのノートでは、1つのCVスキームを使い、各ステージでデータをフィルタリングし、両方の母集団を含むデータで検証することで、データの漏れを防いでいる。このアプローチが正しいかどうか、コメントで教えてください。
+```
+
+
+### 画像コンペのやり方
+
+- 画像コンペのやり方: https://www.guruguru.science/competitions/17/discussions/ab9515a4-3099-4405-9bba-dcf1529191ca/
+
+- DataAugmentationについて: https://www.guruguru.science/competitions/17/discussions/9382fbc5-73b6-47b9-8571-77ed3fd8763b/
+
+
+- Perfinderコンペ Solution: https://cpptake.com/archives/923
+  - 画像コンペは参考になりそう

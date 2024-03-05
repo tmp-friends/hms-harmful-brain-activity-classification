@@ -1,4 +1,5 @@
 ## Study
+
 ### EfficientNet
 
 #### 要約
@@ -76,7 +77,7 @@ https://cvml-expertguide.net/terms/dl/cnn/cnn-backbone/resnet
 - どれくらいの情報量が失われたかを計算
     - 観測データの分布$p(x)$のエントロピーから推定モデル$q(x)$のエントロピーを引く
 
-参考:
+#### 参考
 
 https://qiita.com/shuva/items/81ad2a337175c035988f
 
@@ -91,6 +92,15 @@ https://qiita.com/shuva/items/81ad2a337175c035988f
     - torchvision
     - albumentations
 
-参考:
+
+#### Albumentations
+公式Doc: https://albumentations.ai/
+
+albuでの処理例が載っている
+https://qiita.com/kurilab/items/b69e1be8d0224ae139ad
+
+
+
+#### 参考
 
 https://qiita.com/Takayoshi_Makabe/items/79c8a5ba692aa94043f7
