@@ -54,7 +54,7 @@ class DataLoader(tf.keras.utils.Sequence):
         X, y = self._generate_data(indices)
 
         if self.augment:
-            X, y = self._mixup(X, y)
+            # X, y = self._mixup(X, y)
             X, y = self._hbac_cutmix(X, y)
             X = self._augment_batch(X)
 
@@ -234,6 +234,7 @@ class DataLoader(tf.keras.utils.Sequence):
             [
                 albu.HorizontalFlip(p=0.3),
                 albu.VerticalFlip(p=0.3),
+                albu.RandomBrightnessContrast(p=0.3),
                 # albu.CoarseDropout(max_holes=8, max_height=32, max_width=32, fill_value=0, p=0.5),
                 albu.XYMasking(**params1, p=0.3),
                 albu.XYMasking(**params2, p=0.3),
