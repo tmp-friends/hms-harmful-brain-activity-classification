@@ -128,7 +128,7 @@ class DataLoader(tf.keras.utils.Sequence):
 
         return X, y
 
-    def _mixup(self, X: np.ndarray, y: np.ndarray, alpha=2.0):
+    def _mixup(self, X: np.ndarray, y: np.ndarray, alpha=0.5):
         """MixUp処理を行う
 
         Args:
@@ -144,6 +144,7 @@ class DataLoader(tf.keras.utils.Sequence):
         index_array = np.arange(X.shape[0])
         np.random.shuffle(index_array)
 
+        # batch_sizeに対してmixupをbroadcastで処理
         mixed_X = lam.reshape(-1, 1, 1, 1) * X + (1 - lam).reshape(-1, 1, 1, 1) * X[index_array]
         mixed_y = lam.reshape(-1, 1) * y + (1 - lam).reshape(-1, 1) * y[index_array]
 
