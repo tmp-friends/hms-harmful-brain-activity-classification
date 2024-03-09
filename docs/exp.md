@@ -41,24 +41,27 @@ LB: -
 - データの前処理、後処理を重点的にやるのがいいかもしれない
 
 ### Augmentation
-#### XYMasking x3 only
+#### XYMasking
+
+https://www.kaggle.com/code/iglovikov/xymasking-aug
+
+- XYMasking x3
+    - 0.00x 改善
 
 ```
 CV: 0.5823
 LB: 0.43
 ```
-- 0.00x 改善
 
-#### XYMasking x3 + HorizontalFlip
+- XYMasking x3
+- HorizontalFlip(p=0.5)
+    - 改善していそう
 
 ```
 CV: 0.5751
 LB: 0.43
 ```
 
-- 改善していそう
-
-#### XYMasking x3 + HorizontalFlip + VerticalFlip
 
 - HorizontalFlip p=0.5
 - VerticalFlip p=0.5
@@ -84,6 +87,7 @@ CV: 0.5933
 LB: 0.42
 ```
 
+**所感**
 - augmentationをしすぎると上手く学習ができなくなりそう
     - epoch数を増やせば、精度が出たりする？
 - CVとLBが厳密に連動しているわけではないので、CVを優先して信じる
@@ -92,35 +96,129 @@ LB: 0.42
 
 https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/479446
 
+- cutmix
+- XYMasking
 - HolizontalFlip(p=0.3)
 
 ```
-CV: 0.5174
+CV: 0.6174
 LB: 0.45
 ```
 
-- HorizontalFlip, VerticalFlip(p=0.3)
+- cutmix
+- XYMasking
+- HolizontalFlip(p=0.3)
+- VerticalFlip(p=0.3)
 
 ```
-CV: 0.5116
+CV: 0.6116
 LB: 0.46
 ```
 
+- cutmix
+- XYMasking
+- HolizontalFlip(p=0.5)
+- VerticalFlip(p=0.5)
+
+```
+CV: 0.6225
+LB: -
+```
+
+#### ShiftScaleRotate
+
+- cutmix
+- XYMasking
+- HolizontalFlip(p=0.5)
+- VerticalFlip(p=0.5)
+- ShiftScaleRotate(p=0.3)
+
+```
+CV: 0.6249
+LB:
+```
+
 #### Mixup
+
+- cutmix
+- XYMasking
+- HolizontalFlip(p=0.5)
+- VerticalFlip(p=0.5)
+- Mixup(alpha=2.0)
 
 ```
 CV: 0.6331
 LB: 0.47
 ```
 
-#### image_sizeを変える？
+- cutmix
+- XYMasking
+- HolizontalFlip(p=0.5)
+- VerticalFlip(p=0.5)
+- Mixup(alpha=0.5)
+    - 処理を最後に回す
+
+```
+CV: 0.6420
+LB: -
+```
+
+- Mixup(alpha=0.5)
+- cutmix
+- XYMasking
+- HolizontalFlip(p=0.5)
+- VerticalFlip(p=0.5)
+
+```
+CV: 0.6186
+LB: -
+```
+
+- Mixup(alpha=0.5)
+- XYMasking
+- HolizontalFlip(p=0.5)
+- VerticalFlip(p=0.5)
+
+```
+CV: 0.5909
+LB: -
+```
+
+#### RandomBrightnessContrast
+
+- cutmix
+- XYMasking
+- HolizontalFlip(p=0.5)
+- VerticalFlip(p=0.5)
+- RandomBrightnessContrast(p=0.3)
+
+```
+CV: 0.6151
+LB: -
+```
+
+p=1.0でbrightnessとcontrastを識別しやすいように効かせるとどうなる？
+
+#### GaussNoise
+
+#### 結果
+
+- HorizontalFlip p=0.5
+- XYMasking x3 p=0.3
+
+### image_sizeを変える？
 
 128x256x8 -> 512x512x3
 
 ### TODO
 
-- Discussion読み
-- 過去の類似コンペ読み
+- two stage training
+
+- ViT
+- ResNet
+- CNN
+- スタッキング(Regression)
+
 - CV系モデルの調査(論文読み)
     - CNN
         - ConvLayer

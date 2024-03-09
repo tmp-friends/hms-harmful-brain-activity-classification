@@ -229,7 +229,9 @@ https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/di
 
 https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/466768
 
--
+- Youtube(Time and Frequency domain of EEG by Mike X Cohen)の解説がわかりやすかった
+  - Frequency domainにすることで1sに何回山が出るかをあらわせる
+  - Time domainではnoiseがのっていてもFrequency domainにすることで省けるようになる
 
 **所感**
 - 脳波に関するドメイン知識が皆無なので助かる
@@ -256,12 +258,6 @@ https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/di
 
 - 入力の種類を増やせば、モデルの性能が上がりそう
 
-#### Hard samples are more important - [LB 0.37]
-
-https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/477461:
-
-- Need for New Insightsでふれられていた2stage-training
-
 #### Need for New Insights
 
 https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/480674
@@ -269,6 +265,37 @@ https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/di
 - ViT使う
   - ensembleにも使えそう
 - LB0.2xのレートはself-attention layerを組み込んでいるのでは、という意見もあった
+
+####
+
+- 各label_idの総得票数に関して、training dataが異なる2つのソースから集約された可能性がある
+  - 各グループ内のユニークなクラスの不均衡もある
+- 1票しか入っていないdatasetのシナリオを考えると、モデルが自信過剰にクラスを予測し、残りの確率を0にする可能性がある
+  - KL-divergenseも悪化
+- two-stage training
+  - First stage: 1-7票のデータ
+    - ピーク分布からの学習の可能性を利用
+  - Second stage: 10-28票のデータ
+    - KL-divergenseの問題を緩和
+- アプローチの改善
+  - cdeotteさんの提案する50sのsampleを中心にEEGスペクトログラムを生成する方法から離れ、かわりに`eeg_label_offset_seconds`に基づいて、各label_id毎に異なるspectrogramを生成する方法を選択
+  - ニュアンスの異なるバリエーションを持つ、データセットを得られた
+
+
+
+#### Hard samples are more important - [LB 0.37]
+
+https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/477461:
+
+- Motivation: 分布にピークがあるsampleはモデルが誇張された信頼度で予測することになり、パフォーマンスが低下する
+- Method: two-stage training
+
+しかし、得票数と得票分布の間に相関関係はない
+
+- KL Loss > 7がピークの分布
+
+- First stage: training with all data
+- Second stage: training with samples (KL Loss < 5.5)
 
 #### Proper Augmentations is a Key!
 
@@ -289,6 +316,19 @@ https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/di
   - XYMaskingのparameterのさじ加減が難しい
     - 複数の小さなマスクをかけたほうがいい感じになる
 
+#### How are your experience with Augmentation ?
+
+https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/469953
+
+- mixupが効いている
+  - alpha > 1だと効かなかった人いる
+- brightness/contrastが効いた人もいる
+
+**所感**
+
+- mixupをalpha=0.5で試す
+- brightness/contrastを試す
+
 #### HMS EfficientNetB0 Train
 
 https://www.kaggle.com/code/medali1992/hms-efficientnetb0-train
@@ -303,13 +343,77 @@ https://www.kaggle.com/code/medali1992/hms-efficientnetb0-train
 そこでこのノートでは、1つのCVスキームを使い、各ステージでデータをフィルタリングし、両方の母集団を含むデータで検証することで、データの漏れを防いでいる。このアプローチが正しいかどうか、コメントで教えてください。
 ```
 
+---
 
-### 画像コンペのやり方
+### atmaCup
 
-- 画像コンペのやり方: https://www.guruguru.science/competitions/17/discussions/ab9515a4-3099-4405-9bba-dcf1529191ca/
+#### DataAugmentationどれ使おう？ってときに役立つページなど
 
-- DataAugmentationについて: https://www.guruguru.science/competitions/17/discussions/9382fbc5-73b6-47b9-8571-77ed3fd8763b/
+https://www.guruguru.science/competitions/17/discussions/9382fbc5-73b6-47b9-8571-77ed3fd8763b/
+https://www.guruguru.science/competitions/17/discussions/ab9515a4-3099-4405-9bba-dcf1529191ca/
 
+- CNNの学習において、（特にデータが少量のときに）DataAugmentationは不可欠
+  - 過学習緩和
+- DataAugmentationの種類
+  - 画像に変動を与えるもの -> 認識器が受け取る画像で起こりうる変動に対してロバストにしたい
+    - HorizontalFlip
+    - VerticalFlip
+    - ShiftScaleRotate
+    - RandomResizeCrop
+  - 情報を欠落させるもの(random erasing) -> 過学習緩和
+    - CutOut
+    - RandomErasing
+  - 情報を混ぜるもの(mixup系) -> 過学習緩和
+    - MixUp
 
-- Perfinderコンペ Solution: https://cpptake.com/archives/923
-  - 画像コンペは参考になりそう
+**所感**
+- 情報を欠落させると、波形のPeakなどの情報がなくなり精度が悪くなる気がする
+- mixupにおいて、以下の記述が気になった
+
+> 概念的には二つの画像をランダムな重みで混ぜ合わせると共にそのラベルとして同じ重みで平均したものを使うのですが(※実際はそれぞれのラベルで Loss を計算して重み付き平均する場合が多い)、 今回のタスクだと 0 (16世紀以前) と 2(18世紀) の画像を混ぜたからといってラベルが 1 (17世紀) になるとはとても思えません。
+
+---
+
+### Perfinder
+
+#### 【kaggle】うっかり金メダルを獲得してしまったPetfinderコンペの取り組みまとめ & 5th Place
+
+https://cpptake.com/archives/923
+https://www.kaggle.com/c/petfinder-pawpularity-score/discussion/300928
+
+- Overview
+  - 1st : Make a lot of single models. (our final submittion has 14 single models)
+  - 2nd : Calculate similarity score to detect the same images, previous competiton's train+test images (about 70000 images) and this competition's images.
+  - Final : On overthreshold data, We can use previous competitions meta data. So, we made models for each adoptionspeed as post proccessing.
+
+- data augmentation
+
+```
+'train' : A.Compose([
+    A.OneOf([
+        A.RandomResizedCrop(CFG.IMG_SIZE, CFG.IMG_SIZE, p=0.3, scale=(0.85, 0.95)),
+        A.Resize(CFG.IMG_SIZE, CFG.IMG_SIZE, p=0.4),
+        A.Compose([
+            A.Resize(int(CFG.IMG_SIZE * 1.5), int(CFG.IMG_SIZE * 1.5), p=1.0),
+            A.CenterCrop(p=1.0, height=CFG.IMG_SIZE, width=CFG.IMG_SIZE),
+        ], p=0.3),
+    ], p=1.0),
+    A.HorizontalFlip(p=0.5),
+    A.VerticalFlip(p=0.5),
+    A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225), max_pixel_value=255.0, p=1.0,),
+], p=1.0),
+'valid' : A.Compose([
+    A.Resize(CFG.IMG_SIZE, CFG.IMG_SIZE, p=1),
+    A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225), max_pixel_value=255.0, p=1.0,),
+], p=1.0),
+```
+
+- stacking
+  - BayesianRidge
+
+#### 6th Place - Multitask Learning
+
+https://www.kaggle.com/competitions/petfinder-pawpularity-score/discussion/301015
+
+- chris deotteさん
+-

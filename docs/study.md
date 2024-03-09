@@ -92,15 +92,19 @@ https://qiita.com/shuva/items/81ad2a337175c035988f
     - torchvision
     - albumentations
 
-
 #### Albumentations
 公式Doc: https://albumentations.ai/
 
 albuでの処理例が載っている
 https://qiita.com/kurilab/items/b69e1be8d0224ae139ad
 
+#### Cutout, Mixup
 
+- 参考実装
+  - https://www.kaggle.com/code/kaushal2896/data-augmentation-tutorial-basic-cutout-mixup
+  - https://www.kaggle.com/code/prajeshsanghvi/mixup-cutmix-albumentation
 
 #### 参考
 
 https://qiita.com/Takayoshi_Makabe/items/79c8a5ba692aa94043f7
+
