@@ -1,4 +1,4 @@
-# Overview
+## Overview
 
 EGG(脳波)から発作やその他の種類の有害な脳活動を検出・分類する
 
@@ -21,7 +21,7 @@ EGG(脳波)から発作やその他の種類の有害な脳活動を検出・分
 - submission
   - egg_idに対し、6つの検出対象の確率
 
-## Domain info
+### Domain info
 
 https://www.kaggle.com/code/mvvppp/hms-eda-and-domain-journey
 
@@ -87,7 +87,7 @@ https://www.kaggle.com/code/mvvppp/hms-eda-and-domain-journey
 - Hostの上げている論文: https://www.acns.org/UserFiles/file/ACNSStandardizedCriticalCareEEGTerminology_rev2021.pdf
 
 
-## Data
+### Data
 
 - train.csv
   - eeg_id: 脳波ID (unique)

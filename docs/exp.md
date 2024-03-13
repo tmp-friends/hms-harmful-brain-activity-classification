@@ -213,6 +213,9 @@ p=1.0でbrightnessとcontrastを識別しやすいように効かせるとどう
 ### TODO
 
 - two stage training
+    - 時間がかかる
+    - LBは良くなるが、CVはそこまで良くならない
+      - trainとtestでの投票数の分布が異なると、shake downするかも？
 
 - ViT
 - ResNet

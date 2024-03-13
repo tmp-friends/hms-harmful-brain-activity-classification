@@ -1,19 +1,15 @@
 ## Survey
 
-### HMS
-
+### HMS - Harmful Brain Activity Classification
 #### Understanding Competition Data and EfficientNetB2 Starter - LB 0.43 🎉
 
 https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/468010
 
 
-- Q.
-  - 106,800行のtrain.csvに対し、以下の件数しかない
-    - unique `eeg_id`: 17089
-    - unique `spectrogram_id`: 11138
-    - unique `partient_id`: 1950
-
-
+- Q. 106,800行のtrain.csvに対し、以下の件数しかない
+  - unique `eeg_id`: 17089
+  - unique `spectrogram_id`: 11138
+  - unique `partient_id`: 1950
 - A.
   - train.csvの各行は、一人の特定の患者からの`window of time`
   - 対応するEEGとspectrogramはparquetファイルで見つけられる
@@ -22,7 +18,7 @@ https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/di
 - spectrogramのtime window: 600s
 - 中央のイベント(10s間)を予測する必要あり
 
-- KaggleDatasetあり
+- KaggleDataset作った
   - https://www.kaggle.com/datasets/cdeotte/brain-spectrograms
   - 11138のスペクトログラムファイルを1つにまとめた
   - 一気にRAMに読み込んでおくことで、逐一ファイルを読み込むより高速になる
@@ -30,9 +26,8 @@ https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/di
 **所感**
 
 - 図もついているしわかりやすい
-  - フーリエ変換について調べたら、理解できた
-- EEGとスペクトログラムの対応関係がわからない
-- 中央のイベントを予測するのはわかるが、10sなのはなぜ？？
+  - フーリエ変換については、復習する
+- 中央のイベントを予測するの？10sなのはなぜ？？
 
 **備考**
 
@@ -107,6 +102,10 @@ https://www.kaggle.com/code/cdeotte/how-to-make-spectrogram-from-eeg
 
 - EEGのraw dataからspectrogramを生成する方法
 
+#### Magic Formula to Convert EEG to Spectrograms!
+
+https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/469760
+
 #### LB probing results in HMS-HBAC
 
 https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/471890
@@ -116,29 +115,15 @@ LB probingの結果
 - test data内にeeg_idの重複はない
 - test data内にspectrogram_idの重複はない
 
-#### Magic Formula to Convert EEG to Spectrograms!
-
-https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/469760
-
 #### EfficientNetB0 Starter - [LB 0.43]
 
-- ベースにする
-  - TensorFlow
-
-#### CatBoost Starter
+- baseline
 
 #### Grad Cam - What is important in Spectrograms?
 
 https://www.kaggle.com/code/cdeotte/grad-cam-what-is-important-in-spectrograms
 
 -
-#### 🧠📈 Beginner's EDA 📈🧠
-
-https://www.kaggle.com/code/clehmann10/beginner-s-eda
-
-- train.csvなどの統計データが詳しく載っている
-- あまり読み込めてないので、後で読む
-
 
 #### UPDATED - CatBoost Starter Notebook and Kaggle Dataset - LB 0.60
 
@@ -166,6 +151,13 @@ https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/di
 
 **所感**
 - スペクトログラムからの特徴量の作り方や、GroupKFoldとStratifiedGroupKFoldの使い分け方などを学べた
+
+#### 🧠📈 Beginner's EDA 📈🧠
+
+https://www.kaggle.com/code/clehmann10/beginner-s-eda
+
+- train.csvなどの統計データが詳しく載っている
+- あまり読み込めてないので、後で読む
 
 #### EDA Train.csv
 
@@ -262,11 +254,21 @@ https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/di
 
 https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/480674
 
+- baseline: 0.43
+- mixup: 0.41
+- vit: 0.4
+- XYMasking: 0.39
+- 2stage training: 0.35
+- Ensemble: 0.34
+
+**所感**
 - ViT使う
   - ensembleにも使えそう
 - LB0.2xのレートはself-attention layerを組み込んでいるのでは、という意見もあった
 
-####
+#### EffNetB0 model trained twice, once for each of two training populations - [LB 0.39]
+
+https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/477135
 
 - 各label_idの総得票数に関して、training dataが異なる2つのソースから集約された可能性がある
   - 各グループ内のユニークなクラスの不均衡もある
@@ -281,7 +283,11 @@ https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/di
   - cdeotteさんの提案する50sのsampleを中心にEEGスペクトログラムを生成する方法から離れ、かわりに`eeg_label_offset_seconds`に基づいて、各label_id毎に異なるspectrogramを生成する方法を選択
   - ニュアンスの異なるバリエーションを持つ、データセットを得られた
 
+**所感**
 
+> cdeotteさんの提案する50sのsampleを中心にEEGスペクトログラムを生成する方法
+
+この手法より有効な手はありそうな気はする
 
 #### Hard samples are more important - [LB 0.37]
 
@@ -292,10 +298,12 @@ https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/di
 
 しかし、得票数と得票分布の間に相関関係はない
 
-- KL Loss > 7がピークの分布
-
 - First stage: training with all data
 - Second stage: training with samples (KL Loss < 5.5)
+
+**所感**
+
+- この分布はtestデータでも有効なのか
 
 #### Proper Augmentations is a Key!
 
@@ -342,6 +350,8 @@ https://www.kaggle.com/code/medali1992/hms-efficientnetb0-train
 
 そこでこのノートでは、1つのCVスキームを使い、各ステージでデータをフィルタリングし、両方の母集団を含むデータで検証することで、データの漏れを防いでいる。このアプローチが正しいかどうか、コメントで教えてください。
 ```
+
+####
 
 ---
 
@@ -416,4 +426,19 @@ https://www.kaggle.com/c/petfinder-pawpularity-score/discussion/300928
 https://www.kaggle.com/competitions/petfinder-pawpularity-score/discussion/301015
 
 - chris deotteさん
--
+
+---
+
+### BirdCLEF 2023
+
+####
+
+- FocalLoss
+
+---
+
+###
+
+---
+
+### CMI - DetectSleep
