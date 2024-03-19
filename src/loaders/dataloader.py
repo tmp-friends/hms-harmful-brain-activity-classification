@@ -6,8 +6,10 @@ import pandas as pd
 import tensorflow as tf
 import albumentations as A
 
+TARGETS = ["seizure_vote", "lpd_vote", "gpd_vote", "lrda_vote", "grda_vote", "other_vote"]
 
-class DataLoader(tf.keras.utils.Sequence):
+
+class DataLoader:
     """
     PyTorchのDatasetクラスのようなイメージ
     doc: https://www.tensorflow.org/api_docs/python/tf/keras/utils/Sequence
@@ -21,23 +23,25 @@ class DataLoader(tf.keras.utils.Sequence):
         df: pd.DataFrame,
         specs: Dict[int, np.array],
         eegs: Dict[int, np.array],
-        label_columns: List[str],
-        batch_size: int = 32,
-        shuffle: bool = False,
         augment: bool = False,
         mode: str = "train",
     ):
-        self.df = df
+        self.data = self._build_data(df)
         self.specs = specs
         self.eegs = eegs
-        self.label_columns = label_columns
-        self.batch_size = batch_size
-        self.shuffle = shuffle
         self.augment = augment
         self.mode = mode
 
         # Override
         self.on_epoch_end()
+
+    def _build_data(self, df):
+        data = pd.concat([df] * 3, ignore_index=True)
+        data.loc[: len(df), "data_type"] = "K"
+        data.loc[len(df) : len(df) * 2, "data_type"] = "E"
+        data.loc[len(df) * 2 :, "data_type"] = "KE"
+
+        return data
 
     def __len__(self) -> int:
         """epoch毎のバッチの総数を返す
@@ -45,86 +49,166 @@ class DataLoader(tf.keras.utils.Sequence):
         Returns:
             int: バッチの総数
         """
-        return int(np.ceil(len(self.df) / self.batch_size))
+        return self.data.shape[0]
 
-    def __getitem__(self, index) -> None:
+    def __getitem__(self, ix):
         """1バッチを生成"""
-        indices = self.indices[index * self.batch_size : (index + 1) * self.batch_size]
-
-        X, y = self._generate_data(indices)
+        X, y = self._generate_data(ix)
 
         if self.augment:
             # X, y = self._mixup(X, y)
             # X, y = self._hbac_cutmix(X, y)
-            X = self._augment_batch(X)
+            X = self._augmentation(X)
 
         return X, y
 
+    def __call__(self):
+        for i in range(self.__len__()):
+            yield self.__getitem__(i)
+
+            if i == self.__len__() - 1:
+                self.on_epoch_end()
+
     def on_epoch_end(self) -> None:
         """各epochのあとindicesを更新する"""
-        self.indices = np.arange(len(self.df))
+        if self.mode == "train":
+            self.data = self.data.sample(frac=1).reset_index(drop=True)
 
-        if self.shuffle:
-            np.random.shuffle(self.indices)
+    def _generate_data(self, ix):
+        """データを生成"""
+        row = self.data.iloc[ix]
 
-    def _generate_data(self, indices):
-        """バッチサイズ分のデータを生成
+        if row["data_type"] == "KE":
+            X, y = self._generate_all_specs(ix)
+        elif row["data_type"] in ["K", "E"]:
+            X, y = self._generate_specs(ix)
 
-        Args:
-            indices:
-        """
-        X = np.zeros((len(indices), 128, 256, 8), dtype="float32")
-        y = np.zeros((len(indices), 6), dtype="float32")
-        img = np.ones((128, 256), dtype="float32")
+        return X, y
 
-        for j, i in enumerate(indices):
-            row = self.df.iloc[i]
-            if self.mode == "test":
-                r = 0
-            else:
-                # subsequenceの中点
-                # 中点は(min+max)//2だが、各単位に2秒の配列があるのでさらに2で除算
-                # https://www.kaggle.com/competitions/hms-harmful-brain-activity-classification/discussion/467576#2605715
-                r = int((row["min"] + row["max"]) // 4)
+    def _generate_all_specs(self, ix):
+        X = np.zeros((512, 512, 3), dtype="float32")
+        y = np.zeros((6,), dtype="float32")
 
-            # スペクトログラム(最初の4チャネル)
-            for region in range(4):
-                # spectrogram is 10mins i.e 600secs so 300 units, midpoint is 150 so 145:155 is 20secs
-                img = self.specs[row.spectrogram_id][r : r + 300, region * 100 : (region + 1) * 100].T
+        row = self.data.iloc[ix]
+        if self.mode == "test":
+            offset = 0
+        else:
+            offset = int(row.offset / 2)
 
-                # img毎に対数標準化
-                img = np.clip(img, np.exp(-4), np.exp(8))
-                img = np.log(img)
+        # spec
+        spec = self.specs[row["spec_id"]]
 
-                ep = 1e-6
-                m = np.nanmean(img.flatten())
-                s = np.nanstd(img.flatten())
+        # spectrogram is 10mins i.e 600secs so 300 units, midpoint is 150 so 145:155 is 20secs
+        imgs = [
+            spec[offset : offset + 300, v * 100 : (v + 1) * 100].T for v in [0, 2, 1, 3]
+        ]  # to match kaggle with eeg
+        img = np.stack(imgs, axis=-1)
 
-                img = (img - m) / (s + ep)
-                img = np.nan_to_num(img, nan=0.0)
+        # img毎に対数標準化
+        img = np.clip(img, np.exp(-4), np.exp(8))
+        img = np.log(img)
 
-                # 時間軸に沿って、256time stepsにクロッピング
-                """
-                クロッピング:
-                    画像や信号データから特定の領域を切り取る処理
-                    サイズの統一や関心のある領域を強調するために使用されることが多い
+        img = np.nan_to_num(img, nan=0.0)
 
-                14は高さ方向のクロッピング
-                    画像の上下から各14ピクセルを切り取る
-                22は幅方向のクロッピング
-                    画像の左右から各22ピクセルを切り取る
+        mn = img.flatten().min()
+        mx = img.flatten().max()
+        ep = 1e-5
+        img = 255 * (img - mn) / (mx - mn + ep)
 
-                いずれもHyperParameterなので、改善の余地あり
-                """
-                X[j, 14:-14, :, region] = img[:, 22:-22] / 2.0
+        # 時間軸に沿って、256time stepsにクロッピング
+        X[0_0 + 56 : 100 + 56, :256, 0] = img[:, 22:-22, 0]  # LL_k
+        X[100 + 56 : 200 + 56, :256, 0] = img[:, 22:-22, 2]  # RL_k
+        X[0_0 + 56 : 100 + 56, :256, 1] = img[:, 22:-22, 1]  # LP_k
+        X[100 + 56 : 200 + 56, :256, 1] = img[:, 22:-22, 3]  # RP_k
+        X[0_0 + 56 : 100 + 56, :256, 2] = img[:, 22:-22, 2]  # RL_k
+        X[100 + 56 : 200 + 56, :256, 2] = img[:, 22:-22, 1]  # LP_k
 
-            # EEG(次の4チャネル)
-            # https://www.kaggle.com/code/cdeotte/how-to-make-spectrogram-from-eeg
+        X[0_0 + 56 : 100 + 56, 256:, 0] = img[:, 22:-22, 0]  # LL_k
+        X[100 + 56 : 200 + 56, 256:, 0] = img[:, 22:-22, 2]  # RL_k
+        X[0_0 + 56 : 100 + 56, 256:, 1] = img[:, 22:-22, 1]  # LP_k
+        X[100 + 56 : 200 + 56, 256:, 1] = img[:, 22:-22, 3]  # RP_K
+
+        # EEG
+        eeg = self.eegs[row["eeg_id"]]
+        img = eeg
+
+        mn = img.flatten().min()
+        mx = img.flatten().max()
+        ep = 1e-5
+        img = 255 * (img - mn) / (mx - mn + ep)
+
+        X[200 + 56 : 300 + 56, :256, 0] = img[:, 22:-22, 0]  # LL_e
+        X[300 + 56 : 400 + 56, :256, 0] = img[:, 22:-22, 2]  # RL_e
+        X[200 + 56 : 300 + 56, :256, 1] = img[:, 22:-22, 1]  # LP_e
+        X[300 + 56 : 400 + 56, :256, 1] = img[:, 22:-22, 3]  # RP_e
+        X[200 + 56 : 300 + 56, :256, 2] = img[:, 22:-22, 2]  # RL_e
+        X[300 + 56 : 400 + 56, :256, 2] = img[:, 22:-22, 1]  # LP_e
+
+        X[200 + 56 : 300 + 56, 256:, 0] = img[:, 22:-22, 0]  # LL_e
+        X[300 + 56 : 400 + 56, 256:, 0] = img[:, 22:-22, 2]  # RL_e
+        X[200 + 56 : 300 + 56, 256:, 1] = img[:, 22:-22, 1]  # LP_e
+        X[300 + 56 : 400 + 56, 256:, 1] = img[:, 22:-22, 3]  # RP_e
+
+        if self.mode != "test":
+            y[:] = row[TARGETS]
+
+        return X, y
+
+    def _generate_specs(self, ix):
+        X = np.zeros((512, 512, 3), dtype="float32")
+        y = np.zeros((6,), dtype="float32")
+
+        row = self.data.iloc[ix]
+        if self.mode == "test":
+            offset = 0
+        else:
+            offset = int(row["offset"] / 2)
+
+        if row["data_type"] == "E":
             img = self.eegs[row["eeg_id"]]
-            X[j, :, :, 4:] = img
+        elif row["data_type"] == "K":
+            spec = self.specs[row["spec_id"]]
+            imgs = [
+                spec[offset : offset + 300, v * 100 : (v + 1) * 100].T for v in [0, 2, 1, 3]
+            ]  # to match kaggle with eeg
+            img = np.stack(imgs, axis=-1)
 
-            if self.mode != "test":
-                y[j,] = row[self.label_columns]
+            img = np.clip(img, np.exp(-4), np.exp(8))
+            img = np.log(img)
+
+            img = np.nan_to_num(img, nan=0.0)
+
+        mn = img.flatten().min()
+        mx = img.flatten().max()
+        ep = 1e-5
+        img = 255 * (img - mn) / (mx - mn + ep)
+
+        X[0_0 + 56 : 100 + 56, :256, 0] = img[:, 22:-22, 0]
+        X[100 + 56 : 200 + 56, :256, 0] = img[:, 22:-22, 2]
+        X[0_0 + 56 : 100 + 56, :256, 1] = img[:, 22:-22, 1]
+        X[100 + 56 : 200 + 56, :256, 1] = img[:, 22:-22, 3]
+        X[0_0 + 56 : 100 + 56, :256, 2] = img[:, 22:-22, 2]
+        X[100 + 56 : 200 + 56, :256, 2] = img[:, 22:-22, 1]
+
+        X[0_0 + 56 : 100 + 56, 256:, 0] = img[:, 22:-22, 0]
+        X[100 + 56 : 200 + 56, 256:, 0] = img[:, 22:-22, 1]
+        X[0_0 + 56 : 100 + 56, 256:, 1] = img[:, 22:-22, 2]
+        X[100 + 56 : 200 + 56, 256:, 1] = img[:, 22:-22, 3]
+
+        X[200 + 56 : 300 + 56, :256, 0] = img[:, 22:-22, 0]
+        X[300 + 56 : 400 + 56, :256, 0] = img[:, 22:-22, 1]
+        X[200 + 56 : 300 + 56, :256, 1] = img[:, 22:-22, 2]
+        X[300 + 56 : 400 + 56, :256, 1] = img[:, 22:-22, 3]
+        X[200 + 56 : 300 + 56, :256, 2] = img[:, 22:-22, 3]
+        X[300 + 56 : 400 + 56, :256, 2] = img[:, 22:-22, 2]
+
+        X[200 + 56 : 300 + 56, 256:, 0] = img[:, 22:-22, 0]
+        X[300 + 56 : 400 + 56, 256:, 0] = img[:, 22:-22, 2]
+        X[200 + 56 : 300 + 56, 256:, 1] = img[:, 22:-22, 1]
+        X[300 + 56 : 400 + 56, 256:, 1] = img[:, 22:-22, 3]
+
+        if self.mode != "test":
+            y[:] = row[TARGETS]
 
         return X, y
 
@@ -201,7 +285,7 @@ class DataLoader(tf.keras.utils.Sequence):
 
         return cutmix_data, y
 
-    def _augment_batch(self, img_batch):
+    def _augmentation(self, img_batch):
         for i in range(img_batch.shape[0]):
             img_batch[i,] = self._transform(img_batch[i,])
 
@@ -235,9 +319,9 @@ class DataLoader(tf.keras.utils.Sequence):
                 A.HorizontalFlip(p=0.5),
                 # A.VerticalFlip(p=0.3),
                 # A.CoarseDropout(max_holes=8, max_height=32, max_width=32, fill_value=0, p=0.5),
-                A.XYMasking(**params1, p=0.3),
-                A.XYMasking(**params2, p=0.3),
-                A.XYMasking(**params3, p=0.3),
+                # A.XYMasking(**params1, p=0.3),
+                # A.XYMasking(**params2, p=0.3),
+                # A.XYMasking(**params3, p=0.3),
             ]
         )
 

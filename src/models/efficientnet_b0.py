@@ -1,42 +1,22 @@
 import tensorflow as tf
-import efficientnet.tfkeras as efn
+from tensorflow.keras.models import load_model
+
+# import efficientnet.tfkeras as efn
 
 
 class EfficientNetB0:
     @staticmethod
     def build_model():
-        input = tf.keras.Input(shape=(128, 256, 8))
-        base_model = efn.EfficientNetB0(
-            include_top=False,
-            weights=None,
-            input_shape=None,
-        )
-        base_model.load_weights(
-            "/kaggle/input/tf-efficientnet-imagenet-weights/efficientnet-b0_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5"
-        )
-
-        # INPUT
-        # 128x256x8 -> 512x512x3 monotone画像
-        # spectrogram
-        x1 = [input[:, :, :, i : i + 1] for i in range(4)]
-        x1 = tf.keras.layers.Concatenate(axis=1)(x1)
-
-        # EEG
-        x2 = [input[:, :, :, i + 4 : i + 5] for i in range(4)]
-        x2 = tf.keras.layers.Concatenate(axis=1)(x2)
-
-        # Make512x512x3
-        x = tf.keras.layers.Concatenate(axis=2)([x1, x2])
-
-        x = tf.keras.layers.Concatenate(axis=3)([x, x, x])
+        inp = tf.keras.Input(shape=(512, 512, 3))
+        base_model = load_model("/kaggle/input/efficientnetb-tf-keras/EfficientNetB2.h5")
 
         # OUTPUT
-        x = base_model(x)
+        x = base_model(inp)
         x = tf.keras.layers.GlobalAveragePooling2D()(x)
         x = tf.keras.layers.Dense(6, activation="softmax", dtype="float32")(x)
 
         # compile
-        model = tf.keras.Model(inputs=input, outputs=x)
+        model = tf.keras.Model(inputs=inp, outputs=x)
         opt = tf.keras.optimizers.Adam(learning_rate=1e-3)
         # https://www.tensorflow.org/api_docs/python/tf/keras/losses/KLDivergence
         loss = tf.keras.losses.KLDivergence()
