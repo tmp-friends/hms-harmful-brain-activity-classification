@@ -8,7 +8,7 @@ class EfficientNetB0:
     @staticmethod
     def build_model():
         inp = tf.keras.Input(shape=(512, 512, 3))
-        base_model = load_model("/kaggle/input/efficientnetb-tf-keras/EfficientNetB2.h5")
+        base_model = load_model("/kaggle/input/efficientnetb-tf-keras/EfficientNetB0.h5")
 
         # OUTPUT
         x = base_model(inp)
