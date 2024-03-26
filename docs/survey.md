@@ -351,7 +351,14 @@ https://www.kaggle.com/code/medali1992/hms-efficientnetb0-train
 そこでこのノートでは、1つのCVスキームを使い、各ステージでデータをフィルタリングし、両方の母集団を含むデータで検証することで、データの漏れを防いでいる。このアプローチが正しいかどうか、コメントで教えてください。
 ```
 
-####
+#### Patient Variation - EDA
+
+https://www.kaggle.com/code/pcjimmmy/patient-variation-eda
+
+- patient_idに基づいたEDA
+
+**所感**
+- データの作り方を試行するときに使えるかも
 
 ---
 
