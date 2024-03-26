@@ -1,14 +1,16 @@
 import tensorflow as tf
-from tensorflow.keras.models import load_model
 
-# import efficientnet.tfkeras as efn
+import efficientnet.tfkeras as efn
 
 
 class EfficientNetB0:
     @staticmethod
     def build_model():
         inp = tf.keras.Input(shape=(512, 512, 3))
-        base_model = load_model("/kaggle/input/efficientnetb-tf-keras/EfficientNetB0.h5")
+        base_model = efn.EfficientNetB0(include_top=False, weights=None, input_shape=None)
+        base_model.load_weights(
+            "/kaggle/input/tf-efficientnet-imagenet-weights/efficientnet-b0_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5"
+        )
 
         # OUTPUT
         x = base_model(inp)

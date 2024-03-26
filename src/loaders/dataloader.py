@@ -9,7 +9,7 @@ import albumentations as A
 TARGETS = ["seizure_vote", "lpd_vote", "gpd_vote", "lrda_vote", "grda_vote", "other_vote"]
 
 
-class DataLoader:
+class DataLoader(tf.keras.utils.Sequence):
     """
     PyTorchのDatasetクラスのようなイメージ
     doc: https://www.tensorflow.org/api_docs/python/tf/keras/utils/Sequence
@@ -61,13 +61,6 @@ class DataLoader:
             X = self._augmentation(X)
 
         return X, y
-
-    def __call__(self):
-        for i in range(self.__len__()):
-            yield self.__getitem__(i)
-
-            if i == self.__len__() - 1:
-                self.on_epoch_end()
 
     def on_epoch_end(self) -> None:
         """各epochのあとindicesを更新する"""
