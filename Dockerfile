@@ -1,4 +1,4 @@
-FROM gcr.io/kaggle-gpu-images/python:v137
+FROM gcr.io/kaggle-gpu-images/python:v145
 
 #言語と地域の設定
 ENV lang="ja_jp.utf-8" language="ja_jp:ja" lc_all="ja_jp.utf-8"
