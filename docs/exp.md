@@ -206,9 +206,19 @@ p=1.0でbrightnessとcontrastを識別しやすいように効かせるとどう
 - HorizontalFlip p=0.5
 - XYMasking x3 p=0.3
 
-### image_sizeを変える？
+### 2stage training
 
-128x256x8 -> 512x512x3
+https://www.kaggle.com/code/nartaa/features-head-starter/notebook
+
+- K+E+KE
+- 128x256x8 -> 512x512x3
+
+```
+CV: 0.6299
+LB: -
+```
+
+- CVが悪化したし、val_lossが途中から全然変化しないのでoverfitしてそう
 
 ### TODO
 
