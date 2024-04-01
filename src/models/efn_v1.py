@@ -14,7 +14,7 @@ def build_model():
         "/kaggle/input/tf-efficientnet-imagenet-weights/efficientnet-b0_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5"
     )
 
-    base_model = unfreeze_model(base_model)
+    # base_model = unfreeze_model(base_model)
 
     # INPUT
     # 128x256x8 -> 512x512x3 monotone画像

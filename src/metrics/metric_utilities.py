@@ -23,8 +23,8 @@ def validate_probabilities(df: pd.DataFrame, df_name: str):
     if df.max().max() > 1:
         raise ParticipantVisibleError(f"All target values in {df_name} must be no greater than 1")
 
-    # if not np.allclose(df.sum(axis=1), 1):
-    #     raise ParticipantVisibleError(f"Target values in {df_name} do not add to one within all rows")
+    if not np.allclose(df.sum(axis=1), 1):
+        raise ParticipantVisibleError(f"Target values in {df_name} do not add to one within all rows")
 
 
 def safe_call_score(metric_function, solution, submission, **metric_func_kwargs):
