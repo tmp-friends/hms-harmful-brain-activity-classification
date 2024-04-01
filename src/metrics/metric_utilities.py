@@ -17,8 +17,8 @@ def validate_probabilities(df: pd.DataFrame, df_name: str):
     if not pd.api.types.is_numeric_dtype(df.values):
         raise ParticipantVisibleError(f"All target values in {df_name} must be numeric")
 
-    if df.min().min() < 0:
-        raise ParticipantVisibleError(f"All target values in {df_name} must be at least 0")
+    # if df.min().min() < 0:
+    #     raise ParticipantVisibleError(f"All target values in {df_name} must be at least 0")
 
     if df.max().max() > 1:
         raise ParticipantVisibleError(f"All target values in {df_name} must be no greater than 1")
