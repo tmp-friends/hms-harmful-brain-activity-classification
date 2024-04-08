@@ -219,13 +219,10 @@ LB: -
 ```
 
 - CVが悪化したし、val_lossが途中から全然変化しないのでoverfitしてそう
+- Features+Head StarterでCVが出ているのはアンサンブルしまくっているから説がある
+    - アンサンブルするなら多少overfitしてるくらいが良いとは聞いたことがある
 
 ### TODO
-
-- two stage training
-    - 時間がかかる
-    - LBは良くなるが、CVはそこまで良くならない
-      - trainとtestでの投票数の分布が異なると、shake downするかも？
 
 - ViT
 - ResNet
@@ -236,3 +233,12 @@ LB: -
     - CNN
         - ConvLayer
     - ResNet
+
+- five model ensembleのモデルをそれぞれ実装
+    - Stackingなどのアンサンブル手法を試す
+    - モデルに手を加える
+- 外部データを使うと精度良くなる?
+    - https://www.kaggle.com/code/seanbearden/processing-the-tuh-eeg-seizure-corpus
+
+- ensembleしまくっている公開ノートブックに対して、上位層とのスコア差がとてもある
+    -> なんか気づけていないアイディアがあると思う
